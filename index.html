@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Wayang AR - Rama & Sinta</title>
+
+  <!-- Dua pustaka AR (dipanggil lewat internet, tidak perlu diunduh) -->
+  <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #1a1210; }
+    #petunjuk {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+      padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
+      text-align: center; font: 16px/1.4 Georgia, serif; color: #f4e2b8;
+      background: rgba(26, 18, 16, .75); pointer-events: none;
+    }
+  </style>
+
+  <script>
+    // Menyesuaikan lebar gambar otomatis agar tokoh tidak gepeng.
+    AFRAME.registerComponent("jaga-rasio", {
+      schema: { tinggi: { type: "number", default: 0.5 } },
+      init: function () {
+        var el = this.el, tinggi = this.data.tinggi;
+        var img = document.querySelector(el.getAttribute("src"));
+        function atur() {
+          el.setAttribute("height", tinggi);
+          el.setAttribute("width", tinggi * img.naturalWidth / img.naturalHeight);
+        }
+        if (img.complete) atur(); else img.addEventListener("load", atur);
+      }
+    });
+  </script>
+</head>
+
+<body>
+  <div id="petunjuk">Arahkan kamera ke gambar marker. Sentuh tokoh untuk menggerakkannya.</div>
+
+  <a-scene
+    mindar-image="imageTargetSrc: ./marker.mind; maxTrack: 1;"
+    color-space="sRGB"
+    renderer="colorManagement: true, physicallyCorrectLights"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
+
+    <a-assets>
+      <!-- UBAH DI SINI jika nama atau ekstensi file gambar Anda berbeda (misalnya rama.jpg) -->
+      <img id="rama" src="rama.png">
+      <img id="sinta" src="sinta.png">
+    </a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"
+              cursor="fuse: false; rayOrigin: mouse;"
+              raycaster="far: 10000; objects: .bisa-disentuh"></a-camera>
+
+    <!-- Semua yang ada di dalam entity ini muncul di atas marker -->
+    <a-entity mindar-image-target="targetIndex: 0">
+
+      <!-- Rama (kiri) -->
+      <a-image class="bisa-disentuh" src="#rama" jaga-rasio="tinggi: 0.55"
+               position="-0.22 0.15 0.05"
+               animation__melayang="property: position; to: -0.22 0.18 0.05; dir: alternate; dur: 1800; easing: easeInOutSine; loop: true"
+               animation__goyang="property: rotation; from: 0 0 -10; to: 0 0 10; dur: 250; dir: alternate; loop: 4; startEvents: click"></a-image>
+
+      <!-- Sinta (kanan) -->
+      <a-image class="bisa-disentuh" src="#sinta" jaga-rasio="tinggi: 0.55"
+               position="0.22 0.15 0.05"
+               animation__melayang="property: position; to: 0.22 0.18 0.05; dir: alternate; dur: 2100; easing: easeInOutSine; loop: true"
+               animation__goyang="property: rotation; from: 0 0 -10; to: 0 0 10; dur: 250; dir: alternate; loop: 4; startEvents: click"></a-image>
+
+    </a-entity>
+  </a-scene>
+</body>
+</html>
