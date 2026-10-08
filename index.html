@@ -34,6 +34,9 @@
     };
     var info = document.getElementById("petunjuk");
     var gagalTerakhir = [];
+    window.addEventListener("error", function (e) {
+      if (e && e.message && e.message !== "Script error.") { info.textContent = "Error: " + e.message; }
+    });
 
     function muat(daftar, i) {
       return new Promise(function (ok, gagal) {
@@ -56,15 +59,21 @@
 
     function mulai() {
       AFRAME.registerComponent("jaga-rasio", {
-        schema: { tinggi: { type: "number", default: 0.5 } },
+        schema: { tinggi: { type: "number", default: 0.5 }, berkas: { type: "string" } },
         init: function () {
           var el = this.el, tinggi = this.data.tinggi;
-          var img = document.querySelector(el.getAttribute("src"));
-          function atur() {
-            el.setAttribute("height", tinggi);
-            el.setAttribute("width", tinggi * img.naturalWidth / img.naturalHeight);
-          }
-          if (img.complete) atur(); else img.addEventListener("load", atur);
+          // ukuran awal supaya tokoh pasti tampil walau pengukuran gagal
+          el.setAttribute("height", tinggi);
+          el.setAttribute("width", tinggi * 0.65);
+          try {
+            var im = new Image();
+            im.onload = function () {
+              if (im.naturalWidth && im.naturalHeight) {
+                el.setAttribute("width", tinggi * im.naturalWidth / im.naturalHeight);
+              }
+            };
+            im.src = this.data.berkas;
+          } catch (e) {}
         }
       });
 
@@ -79,11 +88,14 @@
         '<a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse;" ' +
         'raycaster="far: 10000; objects: .bisa-disentuh"></a-camera>' +
         '<a-entity mindar-image-target="targetIndex: 0">' +
-        '<a-image class="bisa-disentuh" src="#rama" jaga-rasio="tinggi: 0.55" position="-0.22 0.15 0.05" ' +
-        'animation__melayang="property: position; to: -0.22 0.18 0.05; dir: alternate; dur: 1800; easing: easeInOutSine; loop: true" ' +
+        /* PENANDA UJI (sementara): kotak kuning dan kubus merah, boleh dihapus nanti */
+        '<a-plane color="#ffcc00" opacity="0.3" width="1" height="0.7" position="0 0 0"></a-plane>' +
+        '<a-box color="#d33" width="0.12" height="0.12" depth="0.12" position="0 0.45 0.1"></a-box>' +
+        '<a-image class="bisa-disentuh" src="#rama" jaga-rasio="tinggi: 0.6; berkas: rama.png" position="-0.25 0.2 0.08" ' +
+        'animation__melayang="property: position; to: -0.25 0.23 0.08; dir: alternate; dur: 1800; easing: easeInOutSine; loop: true" ' +
         'animation__goyang="property: rotation; from: 0 0 -10; to: 0 0 10; dur: 250; dir: alternate; loop: 4; startEvents: click"></a-image>' +
-        '<a-image class="bisa-disentuh" src="#sinta" jaga-rasio="tinggi: 0.55" position="0.22 0.15 0.05" ' +
-        'animation__melayang="property: position; to: 0.22 0.18 0.05; dir: alternate; dur: 2100; easing: easeInOutSine; loop: true" ' +
+        '<a-image class="bisa-disentuh" src="#sinta" jaga-rasio="tinggi: 0.6; berkas: sinta.png" position="0.25 0.2 0.08" ' +
+        'animation__melayang="property: position; to: 0.25 0.23 0.08; dir: alternate; dur: 2100; easing: easeInOutSine; loop: true" ' +
         'animation__goyang="property: rotation; from: 0 0 -10; to: 0 0 10; dur: 250; dir: alternate; loop: 4; startEvents: click"></a-image>' +
         '</a-entity></a-scene>';
       info.textContent = "Arahkan kamera ke gambar marker. Sentuh tokoh untuk menggerakkannya.";
