@@ -86,6 +86,24 @@
         'animation__goyang="property: rotation; from: 0 0 -10; to: 0 0 10; dur: 250; dir: alternate; loop: 4; startEvents: click"></a-image>' +
         '</a-entity></a-scene>';
       info.textContent = "Arahkan kamera ke gambar marker. Sentuh tokoh untuk menggerakkannya.";
+
+      // Status di layar: membantu mengetahui apakah marker terdeteksi
+      var sasaran = document.querySelector("[mindar-image-target]");
+      sasaran.addEventListener("targetFound", function () {
+        info.textContent = "Marker terdeteksi! Rama dan Sinta seharusnya muncul. Sentuh untuk menggerakkan.";
+      });
+      sasaran.addEventListener("targetLost", function () {
+        info.textContent = "Marker hilang. Arahkan kembali kamera ke marker.";
+      });
+      // Cek apakah gambar tokoh berhasil dimuat
+      setTimeout(function () {
+        ["rama", "sinta"].forEach(function (id) {
+          var im = document.getElementById(id);
+          if (im && im.complete && im.naturalWidth === 0) {
+            info.textContent = "Gambar " + id + " gagal dimuat. Periksa nama file " + id + ".png di GitHub.";
+          }
+        });
+      }, 4000);
     }
 
     muat(SUMBER.aframe, 0)
